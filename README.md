@@ -129,6 +129,17 @@ This repository contains a collection of Verilog-AMS models for various electron
   - `tdel`: Output delay (default: 3u)
   - `trise`, `tfall`: Output rise/fall times (default: 1u)
 
+### 9. `ramp_gen`
+- **Function:** Generates a linear voltage ramp from rising edge of `clk` with a slope defined by `slope`.
+- **Inputs:**
+  - `clk`: Clock signal (resets ramp)
+- **Outputs:**
+  - `ramp`: Ramp voltage output
+- **Parameters:**
+  - `vrst`: Starting voltage of the ramp (default: 0)
+  - `vtrans_clk`: Clock threshold voltage (default: 2.5)
+  - `slope`: Slope of the ramp in V/s (default: 5e6)
+
 ---
 
 ## License

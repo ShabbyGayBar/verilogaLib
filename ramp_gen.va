@@ -1,0 +1,33 @@
+// VerilogA for VerilogAmsLib, ramp_gen, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module ramp_gen(clk, ramp);
+input clk;
+output ramp;
+
+electrical clk, ramp;
+
+parameter real vrst = 0; // starting voltage
+parameter real vtrans_clk = 2.5; // clock transition voltage
+parameter real slope = 5e6; // V/s
+
+real ramp_val;
+real t_reset;
+
+analog begin
+	@(initial_step) begin
+		t_reset = $abstime; // start ramp at simulation time 0
+	end
+
+	@(cross(V(clk) - vtrans_clk, +1)) begin
+		t_reset = $abstime; // reset ramp start time on rising edge
+    end
+
+	// Linear ramp from last reset time at specified slope
+	ramp_val = vrst + slope * ($abstime - t_reset);
+	V(ramp) <+ ramp_val;
+end
+
+endmodule
