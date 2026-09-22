@@ -1,31 +1,54 @@
-// VerilogA for VerilogAmsLib, dac_16bit_ideal, veriloga
+`include "discipline.h"
+`include "constants.h"
 
-`include "constants.vams"
-`include "disciplines.vams"
+//--------------------
+//
+// dac_16bit_ideal
+//
+// - Ideal 16 bit digital to analog converter
+//
+// vd:       data input bus [V,A]
+// vout:     analog output [V,A]
+//
+// INSTANCE parameters
+//    tdel, trise, tfall = {usual} [s]
+//    vref   = full-scale reference voltage [V]
+//    vtrans = input logic threshold voltage [V]
+//
+// MODEL parameters
+//    {none}
+//
+// This model is ideal in the sense that there is no mismatch modeled.
+//
 
 `define NUM_DAC_BITS 16
 
-module dac_16bit_ideal(in, out);
-input [`NUM_DAC_BITS-1:0] in;
-output out;
+module dac_16bit_ideal (vd, vout);
+input [`NUM_DAC_BITS-1:0] vd;
+output vout;
 
-electrical in[`NUM_DAC_BITS-1:0], out;
+electrical [`NUM_DAC_BITS-1:0] vd;
+electrical vout;
 
-parameter real vref  = 1 from (0:inf);
-parameter real vtrans  = 2.5;
-parameter real tdel  = 3u from [0:inf);
-parameter real trise = 1u from (0:inf);
-parameter real tfall = 1u from (0:inf);
+parameter real vref = 1 from [0:inf);
+parameter real trise = 0 from [0:inf);
+parameter real tfall = 0 from [0:inf);
+parameter real tdel = 0 from [0:inf);
+parameter real vtrans = 2.5;
 
-real out_scaled; // output scaled as fraction of 256
-integer i;
+real out_scaled; // unsigned DAC code from 0 to (2^NUM_DAC_BITS)-1
+genvar bit_idx;
 
 analog begin
 	out_scaled = 0;
-	for (i = 0; i < `NUM_DAC_BITS; i = i + 1) begin
-		out_scaled = out_scaled + ((V(in[i]) > vtrans)? (1 << i): 0);
+
+	for (bit_idx = 0; bit_idx < `NUM_DAC_BITS; bit_idx = bit_idx + 1) begin
+		out_scaled = out_scaled
+		           + ((V(vd[bit_idx]) > vtrans) ? (1 << bit_idx) : 0);
 	end
-	V(out) <+ transition(vref * out_scaled / (1 << `NUM_DAC_BITS), tdel, trise, tfall);
+
+	V(vout) <+ transition(vref*out_scaled/(1 << `NUM_DAC_BITS),
+	                      tdel, trise, tfall);
 end
 
 endmodule
