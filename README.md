@@ -25,7 +25,7 @@ This repository contains a collection of Verilog-AMS models for various electron
   - `tdel`: Output delay (default: 3u)
   - `trise`, `tfall`: Output rise/fall times (default: 1u)
 
-### 2. `dff_rsn`
+### 2. `dff_sr`
 - **Function:** D flip-flop with asynchronous reset and set.
 - **Inputs:**
   - `clk`: Clock input
@@ -35,6 +35,7 @@ This repository contains a collection of Verilog-AMS models for various electron
 - **Outputs:**
   - `q`: Output
   - `_q`: Complementary output
+  - When `_rst` and `_set` are both active, `q` and `_q` are both logic high.
 - **Parameters:**
   - `vlogic_high`: Logic high voltage (default: 5)
   - `vlogic_low`: Logic low voltage (default: 0)

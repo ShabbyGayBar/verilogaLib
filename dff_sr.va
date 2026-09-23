@@ -1,0 +1,58 @@
+`include "discipline.h"
+`include "constants.h"
+
+//-------------------
+// dff_sr
+//-------------------
+//
+// -- D-type flip flop with asynchronous active-low reset and set
+//
+// d,clk,_rst,_set:  [V,A]
+// q,_q:             [V,A]
+//
+// INSTANCE parameters
+//    vlogic_high = output voltage for high [V]
+//    vlogic_low  = output voltage for low [V]
+//    vtrans_clk  = voltage above this at clk is considered high [V]
+//    vtrans      = voltage above this at d is high, below this at _rst and _set is active [V]
+//    tdel,trise,tfall = {usual} [s]
+//
+// Triggered on the rising edge of clk
+// _rst low: q is low and _q is high
+// _set low: q is high and _q is low
+// _rst and _set low: q and _q are high
+//
+module dff_sr(d, clk, q, _q, _rst, _set);
+input clk, d, _rst, _set;
+output q, _q;
+
+electrical q, _q, clk, d, _rst, _set;
+
+parameter real vlogic_high = 5;
+parameter real vlogic_low = 0;
+parameter real vtrans_clk = 2.5;
+parameter real vtrans = 2.5;
+parameter real tdel = 3u from [0:inf);
+parameter real trise = 1u from (0:inf);
+parameter real tfall = 1u from (0:inf);
+
+integer x,rst_val,set_val,q_val,qbar_val;
+
+analog begin
+	rst_val = (V(_rst) < vtrans);
+	set_val = (V(_set) < vtrans);
+	@(cross(V(clk) - vtrans_clk, 1))
+		x = (((V(d) > vtrans) || set_val) && !rst_val);
+	@(cross(V(_rst) - vtrans, -1))
+		x = 0;
+	@(cross(V(_set) - vtrans, -1))
+		x = !rst_val;
+
+	q_val = set_val || (!rst_val && x);
+	qbar_val = rst_val || (!set_val && !x);
+
+	V(q) <+ transition(vlogic_high*q_val + vlogic_low*!q_val, tdel, trise, tfall );
+	V(_q) <+ transition(vlogic_high*qbar_val + vlogic_low*!qbar_val, tdel, trise, tfall );
+end
+
+endmodule
