@@ -41,6 +41,7 @@ This repository contains a collection of Verilog-AMS models for various electron
   - `vlogic_low`: Logic low voltage (default: 0)
   - `vtrans_clk`: Clock threshold voltage (default: 2.5)
   - `vtrans`: Data/reset/set threshold voltage (default: 2.5)
+  - `initial_q`: Initial stored output state when reset and set are inactive (default: 0)
   - `tdel`: Output delay (default: 3u)
   - `trise`, `tfall`: Output rise/fall times (default: 1u)
 

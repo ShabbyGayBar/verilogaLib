@@ -15,6 +15,7 @@
 //    vlogic_low  = output voltage for low [V]
 //    vtrans_clk  = voltage above this at clk is considered high [V]
 //    vtrans      = voltage above this at d is high, below this at _rst and _set is active [V]
+//    initial_q   = stored output state at startup when reset and set are inactive
 //    tdel,trise,tfall = {usual} [s]
 //
 // Triggered on the rising edge of clk
@@ -32,6 +33,7 @@ parameter real vlogic_high = 5;
 parameter real vlogic_low = 0;
 parameter real vtrans_clk = 2.5;
 parameter real vtrans = 2.5;
+parameter integer initial_q = 0 from [0:1];
 parameter real tdel = 3u from [0:inf);
 parameter real trise = 1u from (0:inf);
 parameter real tfall = 1u from (0:inf);
@@ -41,6 +43,14 @@ integer x,rst_val,set_val,q_val,qbar_val;
 analog begin
 	rst_val = (V(_rst) < vtrans);
 	set_val = (V(_set) < vtrans);
+	@(initial_step) begin
+		if (rst_val)
+			x = 0;
+		else if (set_val)
+			x = 1;
+		else
+			x = initial_q;
+	end
 	@(cross(V(clk) - vtrans_clk, 1))
 		x = (((V(d) > vtrans) || set_val) && !rst_val);
 	@(cross(V(_rst) - vtrans, -1))
