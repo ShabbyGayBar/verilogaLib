@@ -1,0 +1,48 @@
+`include "discipline.h"
+`include "constants.h"
+
+//-------------------
+// vc_res
+//-------------------
+//
+// -- Differential-voltage-controlled conductor
+//
+// vp,vn:             bidirectional conducting terminals [V,A]
+// vctrlp,vctrln:     high-impedance differential control input [V]
+//
+// INSTANCE parameters
+//    g_offset = zero-control conductance [S]
+//    g_gain   = control-to-conductance gain [S/V]
+//    g_min    = minimum conductance [S]
+//    g_max    = maximum conductance [S]
+//
+// Graw = g_offset + g_gain * V(vctrlp,vctrln)
+// G    = min(max(Graw,g_min),g_max)
+// I(vp,vn) = G * V(vp,vn)
+//
+module vc_res(vp, vn, vctrlp, vctrln);
+inout vp, vn;
+input vctrlp, vctrln;
+
+electrical vp, vn, vctrlp, vctrln;
+
+parameter real g_offset = 0;
+parameter real g_gain = 1 from [0:inf);
+parameter real g_min = 0 from [0:inf);
+parameter real g_max = 1 from [0:inf);
+
+real g_raw, g;
+
+analog begin
+	@(initial_step) begin
+		if (g_min > g_max)
+			$error("vc_res: g_min must be less than or equal to g_max");
+	end
+
+	g_raw = g_offset + g_gain * V(vctrlp, vctrln);
+	g = min(max(g_raw, g_min), g_max);
+
+	I(vp, vn) <+ g * V(vp, vn);
+end
+
+endmodule

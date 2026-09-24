@@ -60,16 +60,17 @@ This repository contains a collection of Verilog-AMS models for various electron
   - `tdel`: Output delay (default: 3u)
   - `trise`, `tfall`: Output rise/fall times (default: 1u)
 
-### 4. `tah_ideal`
-- **Function:** Ideal track-and-hold circuit. Tracks input when clock is high, holds output when clock is low.
+### 4. `vc_res`
+- **Function:** Memoryless voltage-controlled conductor. Its conductance is set by a differential control voltage and clamped to a configurable range.
 - **Inputs:**
-  - `clk`: Clock input (track when high, hold when low)
-  - `in`: Analog input
+  - `vctrlp`, `vctrln`: High-impedance differential control input
 - **Inout:**
-  - `out`: Analog output (bidirectional for charge sharing)
+  - `vp`, `vn`: Bidirectional conducting terminals
 - **Parameters:**
-  - `ron`: On-resistance during track mode (default: 25)
-  - `vtrans_clk`: Clock threshold voltage (default: 2.5)
+  - `g_offset`: Zero-control conductance (default: 0 S)
+  - `g_gain`: Control-to-conductance gain (default: 1 S/V)
+  - `g_min`: Minimum conductance (default: 0 S)
+  - `g_max`: Maximum conductance (default: 1 S)
 
 ### 5. `adc_16bit_ideal`
 - **Function:** Ideal 16-bit analog-to-digital converter. Converts analog input to 16-bit digital output on clock edge.
