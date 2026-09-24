@@ -121,12 +121,13 @@ This repository contains a collection of Verilog-AMS models for various electron
 - **Function:** Phase-frequency detector. Detects phase and frequency difference between two clock signals.
 - **Inputs:**
   - `ref`: Reference clock input
-  - `fb`: Feedback clock input
+  - `lo`: Local oscillator clock input
 - **Outputs:**
-  - `up`: Output pulse when `ref` leads `fb`
-  - `down`: Output pulse when `fb` leads `ref`
+  - `up`: Output pulse when `ref` leads `lo`
+  - `down`: Output pulse when `lo` leads `ref`
 - **Parameters:**
   - `vlogic_high`: Logic high voltage (default: 5)
+  - `vlogic_low`: Logic low voltage (default: 0)
   - `vtrans`: Input threshold voltage (default: 2.5)
   - `tdel`: Output delay (default: 3u)
   - `trise`, `tfall`: Output rise/fall times (default: 1u)

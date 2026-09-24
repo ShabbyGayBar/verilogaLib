@@ -1,15 +1,33 @@
-// VerilogA for VerilogAmsLib, pfd, veriloga
+`include "discipline.h"
+`include "constants.h"
 
-`include "constants.vams"
-`include "disciplines.vams"
+//-------------------
+// pfd
+//-------------------
+//
+// -- Phase-frequency detector
+//
+// ref,lo:   clock inputs [V,A]
+// up,down:  phase-frequency detector outputs [V,A]
+//
+// INSTANCE parameters
+//    vlogic_high = output voltage for high [V]
+//    vlogic_low  = output voltage for low [V]
+//    vtrans      = clock input threshold voltage [V]
+//    tdel,trise,tfall = {usual} [s]
+//
+// A rising edge on ref asserts up, and a rising edge on lo asserts down.
+// When both outputs are asserted, the internal reset clears them.
+//
 
-module pfd(ref, fb, up, down);
-input ref, fb;
+module pfd(ref, lo, up, down);
+input ref, lo;
 output up, down;
 
-electrical ref, fb, up, down, rst;
+electrical ref, lo, up, down, rst;
 
 parameter real vlogic_high = 5;
+parameter real vlogic_low = 0;
 parameter real vtrans = 2.5;
 parameter real tdel = 3u from [0:inf);
 parameter real trise = 1u from (0:inf);
@@ -18,22 +36,26 @@ parameter real tfall = 1u from (0:inf);
 integer up_val, down_val, rst_val;
 
 analog begin
-	@(cross(V(ref) - vtrans, 1)) begin
+	@(initial_step) begin
+		up_val = 0;
+		down_val = 0;
+		rst_val = 0;
+	end
+
+	@(cross(V(ref) - vtrans, 1))
 		up_val = 1;
-	end
-	@(cross(V(fb) - vtrans, 1)) begin
+	@(cross(V(lo) - vtrans, 1))
 		down_val = 1;
-	end
-	@(cross(V(rst) - vtrans, 1)) begin
+	@(cross(V(rst) - 0.5, 1)) begin
 		up_val = 0;
 		down_val = 0;
 	end
 
 	rst_val = up_val && down_val;
-	
-	V(rst) <+ transition(rst_val * vlogic_high, tdel, trise, tfall);
-	V(up) <+ transition(up_val * vlogic_high, tdel, trise, tfall);
-	V(down) <+ transition(down_val * vlogic_high, tdel, trise, tfall);
+
+	V(rst) <+ transition(rst_val, tdel, trise, tfall);
+	V(up) <+ transition(vlogic_high*up_val + vlogic_low*!up_val, tdel, trise, tfall);
+	V(down) <+ transition(vlogic_high*down_val + vlogic_low*!down_val, tdel, trise, tfall);
 end
 
 endmodule
