@@ -1,0 +1,61 @@
+`include "discipline.h"
+`include "constants.h"
+
+//--------------------
+// bin2thermo
+//--------------------
+//
+// - Combinational binary-to-thermometer decoder
+//
+// bin:    unsigned binary input bus [V,A], bit 0 is the LSB
+// thermo: thermometer output bus [V,A], high bits start at bit 0
+//
+// For input value N, thermo[i] is high when i < N.
+// With NUM_DEC_BITS = 8, the output has 255 bits:
+// N = 0 produces all low; N = 255 produces all high.
+// Input voltages exactly at vtrans are interpreted as low.
+//
+// INSTANCE parameters
+//    vtrans      = input logic threshold voltage [V]
+//    vlogic_high = output voltage for high [V]
+//    vlogic_low  = output voltage for low [V]
+//    tdel, trise, tfall = output delay, rise time, fall time [s]
+//
+
+`define NUM_DEC_BITS 8
+
+module bin2thermo(bin, thermo);
+input [`NUM_DEC_BITS-1:0] bin;
+output [(1 << `NUM_DEC_BITS)-2:0] thermo;
+
+electrical [`NUM_DEC_BITS-1:0] bin;
+electrical [(1 << `NUM_DEC_BITS)-2:0] thermo;
+
+parameter real vtrans = 2.5;
+parameter real vlogic_high = 5;
+parameter real vlogic_low = 0;
+parameter real tdel = 0 from [0:inf);
+parameter real trise = 0 from [0:inf);
+parameter real tfall = 0 from [0:inf);
+
+integer decoded_value;
+genvar bin_idx, thermo_idx;
+
+analog begin
+    decoded_value = 0;
+
+    for (bin_idx = 0; bin_idx < `NUM_DEC_BITS; bin_idx = bin_idx + 1) begin
+        decoded_value = decoded_value
+                        + ((V(bin[bin_idx]) > vtrans) ? (1 << bin_idx) : 0);
+    end
+
+    for (thermo_idx = 0; thermo_idx < (1 << `NUM_DEC_BITS)-1; thermo_idx = thermo_idx + 1) begin
+        V(thermo[thermo_idx]) <+ transition(
+            (thermo_idx < decoded_value) ? vlogic_high : vlogic_low,
+            tdel, trise, tfall);
+    end
+end
+
+endmodule
+
+`undef NUM_DEC_BITS
